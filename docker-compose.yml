@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  #### MySQL ####
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=UTC
+      - LANG=C.UTF-8
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "${MYSQL_PORT}:3306"
+    command:
+      - mysqld
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+
+  #### PostgreSQL ####
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ${DATA_PATH_HOST}/postgres:/var/lib/postgresql/data
+      - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+  #### Redis ####
+  redis:
+    image: redis:${REDIS_VERSION}
+    restart: always
+    volumes:
+      - ${DATA_PATH_HOST}/redis:/data
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  #### Migrate ####
+  # migrate:
+  #   image: migrate/migrate:latest
+  #   volumes:
+  #     - ./migrations:/migrations
+
+  # web:
+  #   build: .
+  #   ports:
+  #     - "80:8000"
+  #   depends_on:
+  #     - "postgres"
+  #   command: ["./wait-for-it.sh", "postgres:5432", "--", "python", "app.py"]
