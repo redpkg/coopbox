@@ -3,42 +3,61 @@ version: "3"
 services:
   #### MySQL ####
   mysql:
-    image: mysql:${MYSQL_VERSION}
-    restart: always
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
     environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - TZ=UTC
-      - LANG=C.UTF-8
     volumes:
-      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ${DATA_PATH_HOST}/mysql/data:/var/lib/mysql
       - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     ports:
       - "${MYSQL_PORT}:3306"
-    command:
-      - mysqld
-      - "--character-set-server=utf8mb4"
-      - "--collation-server=utf8mb4_unicode_ci"
 
   #### PostgreSQL ####
   postgres:
-    image: postgres:${POSTGRES_VERSION}
-    restart: always
+    build:
+      context: ./postgres
+      args:
+        - POSTGRES_VERSION=${POSTGRES_VERSION}
     environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - ${DATA_PATH_HOST}/postgres:/var/lib/postgresql/data
+      - ${DATA_PATH_HOST}/postgres/data:/var/lib/postgresql/data
       - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:5432"
 
   #### Redis ####
   redis:
-    image: redis:${REDIS_VERSION}
-    restart: always
+    build:
+      context: ./redis
+      args:
+        - REDIS_VERSION=${REDIS_VERSION}
     volumes:
-      - ${DATA_PATH_HOST}/redis:/data
+      - ${DATA_PATH_HOST}/redis/data:/data
     ports:
       - "${REDIS_PORT}:6379"
+
+  #### MinIO ####
+  # minio:
+  #   image: minio/minio:${MINIO_VERSION}
+  #   environment:
+  #     - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+  #     - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+  #   volumes:
+  #     - ${DATA_PATH_HOST}/minio/data:/data
+  #     - ${DATA_PATH_HOST}/minio/config:/root/.minio
+  #   ports:
+  #     - "${MINIO_PORT}:9000"
+  #     - "${MINIO_CONSOLE_PORT}:9001"
 
   #### Migrate ####
   # migrate:
